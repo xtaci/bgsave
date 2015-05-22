@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package proto;
+
+// bgsave service definition
+service BgSaveService {
+	rpc MarkDirty(BgSave.Key) returns (BgSave.NullResult) {} // 标记REDIS中的某个KEY是脏数据
+}
+
+message BgSave {
+	message Key{
+		string name =1;
+	}
+	message NullResult {
+	}
+}
