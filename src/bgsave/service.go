@@ -6,7 +6,6 @@ import (
 	"golang.org/x/net/context"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"gopkg.in/vmihailenco/msgpack.v2"
 	"os"
 	pb "proto"
 	"runtime"
@@ -145,7 +144,7 @@ func (s *server) dump() {
 		// save to mongodb
 		var tmp map[string]interface{}
 		for k, v := range sublist {
-			err := msgpack.Unmarshal(records[k], &tmp)
+			err := bson.Unmarshal(records[k], &tmp)
 			if err != nil {
 				log.Critical(SERVICE, err)
 				continue
