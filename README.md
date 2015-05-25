@@ -2,7 +2,7 @@
 periodically dump records from redis.      
 the format of the record is defined as :         
 
-key(tablname:record_id) -> value(msgpack)
+key(tablname:record_id) -> value(packed)
 
 # environment variables:
 * REDIS_HOST : eg: 127.0.0.1:6379    
