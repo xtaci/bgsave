@@ -4,7 +4,7 @@ import (
 	"github.com/fzzy/radix/redis"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"gopkg.in/vmihailenco/msgpack.v2"
+	"gopkg.in/mgo.v2/bson"
 	pb "proto"
 	"testing"
 )
@@ -29,7 +29,7 @@ func TestBgSave(t *testing.T) {
 	}
 
 	// mset data into redis
-	bin, _ := msgpack.Marshal(&TestStruct{3721, "hello", 18, []byte("world")})
+	bin, _ := bson.Marshal(&TestStruct{3721, "hello", 18, []byte("world")})
 	reply := client.Cmd("set", test_key, bin)
 	if reply.Err != nil {
 		t.Fatal(reply.Err)
