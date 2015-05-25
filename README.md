@@ -18,4 +18,4 @@ $gpm
 $go install bgsave         
 
 #install with docker
-docker build -t <YOUR_TAG>/bgsave .     
+docker build -t bgsave .     
