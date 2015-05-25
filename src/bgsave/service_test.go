@@ -1,7 +1,6 @@
 package main
 
 import (
-	log "github.com/GameGophers/nsq-logger"
 	"github.com/fzzy/radix/redis"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -56,12 +55,10 @@ func TestBgSave(t *testing.T) {
 	}
 }
 func TestWriteBgSave(t *testing.T) {
-	t.Skip()
 	// start connection to mongodb
 	sess, err := mgo.Dial(_mongodb_url)
 	if err != nil {
-		log.Critical(SERVICE, err)
-		return
+		t.Fatal(err)
 	}
 	defer sess.Close()
 	// database is provided in url
@@ -69,18 +66,17 @@ func TestWriteBgSave(t *testing.T) {
 	tt := &TestStruct{3721, "hello", 18, 999, 1.1, 2.2, []byte("world")}
 	_, err = db.C("testing").Upsert(bson.M{"id": tt.Id}, tt)
 	if err != nil {
-		log.Critical(SERVICE, err)
-		return
+		t.Fatal(SERVICE, err)
 	}
 	// get data from mongodb
-	log.Info(SERVICE, "Save to mongodb: ", tt)
+	t.Log("Save to mongodb: ", tt)
 }
+
 func TestReadBgSave(t *testing.T) {
 	// start connection to mongodb
 	sess, err := mgo.Dial(_mongodb_url)
 	if err != nil {
-		log.Critical(SERVICE, err)
-		return
+		t.Fatal(err)
 	}
 	defer sess.Close()
 	// database is provided in url
@@ -88,9 +84,8 @@ func TestReadBgSave(t *testing.T) {
 	tt := &TestStruct{}
 	err = db.C("testing").Find(bson.M{"id": 3721}).One(&tt)
 	if err != nil {
-		log.Critical(SERVICE, err)
-		return
+		t.Fatal(err)
 	}
 	// get data from mongodb
-	log.Info(SERVICE, "Read from mongodb: ", tt)
+	t.Log("Read from mongodb: ", tt)
 }
