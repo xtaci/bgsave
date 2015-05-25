@@ -19,7 +19,7 @@ const (
 	SERVICE             = "[BGSAVE]"
 	DEFAULT_SAVE_DELAY  = 15 * time.Minute // depends on how long can we afford to lose data
 	DEFAULT_REDIS_HOST  = "127.0.0.1:6379"
-	DEFAULT_MONGODB_URL = "mongodb://127.0.0.1"
+	DEFAULT_MONGODB_URL = "mongodb://127.0.0.1/mydb"
 	ENV_REDIS_HOST      = "REDIS_HOST"
 	ENV_MONGODB_URL     = "MONGODB_URL"
 	ENV_SAVE_DELAY      = "SAVE_DELAY"
@@ -28,40 +28,37 @@ const (
 )
 
 type server struct {
-	dirty map[string]bool
-	wait  chan string
+	dirty       map[string]bool
+	wait        chan string
+	redis_host  string
+	mongodb_url string
+	save_delay  time.Duration
 	sync.Mutex
 }
 
-var (
-	_redis_host  string
-	_mongodb_url string
-	_save_delay  time.Duration
-)
+var ()
 
-func init() {
-	_redis_host = DEFAULT_REDIS_HOST
+func (s *server) init() {
+	s.redis_host = DEFAULT_REDIS_HOST
 	if env := os.Getenv(ENV_REDIS_HOST); env != "" {
-		_redis_host = env
+		s.redis_host = env
 	}
 
-	_mongodb_url = DEFAULT_MONGODB_URL
+	s.mongodb_url = DEFAULT_MONGODB_URL
 	if env := os.Getenv(ENV_MONGODB_URL); env != "" {
-		_mongodb_url = env
+		s.mongodb_url = env
 	}
 
-	_save_delay = DEFAULT_SAVE_DELAY
+	s.save_delay = DEFAULT_SAVE_DELAY
 	if env := os.Getenv(ENV_SAVE_DELAY); env != "" {
 		sec, err := strconv.Atoi(env)
 		if err != nil {
 			log.Error(SERVICE, err)
 		} else {
-			_save_delay = time.Duration(sec) * time.Second
+			s.save_delay = time.Duration(sec) * time.Second
 		}
 	}
-}
 
-func (s *server) init() {
 	s.dirty = make(map[string]bool)
 	s.wait = make(chan string, BUFSIZ)
 	go s.loader_task()
@@ -86,7 +83,7 @@ func (s *server) loader_task() {
 // background writer task
 func (s *server) writer_task() {
 	for {
-		<-time.After(_save_delay)
+		<-time.After(s.save_delay)
 		s.dump()
 	}
 }
@@ -94,7 +91,7 @@ func (s *server) writer_task() {
 // dump all dirty data into backend database
 func (s *server) dump() {
 	// start connection to redis
-	client, err := redis.Dial("tcp", _redis_host)
+	client, err := redis.Dial("tcp", s.redis_host)
 	if err != nil {
 		log.Critical(SERVICE, err)
 		return
@@ -102,7 +99,7 @@ func (s *server) dump() {
 	defer client.Close()
 
 	// start connection to mongodb
-	sess, err := mgo.Dial(_mongodb_url)
+	sess, err := mgo.Dial(s.mongodb_url)
 	if err != nil {
 		log.Critical(SERVICE, err)
 		return

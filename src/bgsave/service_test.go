@@ -56,7 +56,7 @@ func TestBgSave(t *testing.T) {
 }
 func TestWriteBgSave(t *testing.T) {
 	// start connection to mongodb
-	sess, err := mgo.Dial(_mongodb_url)
+	sess, err := mgo.Dial(DEFAULT_MONGODB_URL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +74,7 @@ func TestWriteBgSave(t *testing.T) {
 
 func TestReadBgSave(t *testing.T) {
 	// start connection to mongodb
-	sess, err := mgo.Dial(_mongodb_url)
+	sess, err := mgo.Dial(DEFAULT_MONGODB_URL)
 	if err != nil {
 		t.Fatal(err)
 	}
