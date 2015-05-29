@@ -66,7 +66,7 @@ func TestWriteBgSave(t *testing.T) {
 	tt := &TestStruct{3721, "hello", 18, 999, 1.1, 2.2, []byte("world")}
 	_, err = db.C("testing").Upsert(bson.M{"id": tt.Id}, tt)
 	if err != nil {
-		t.Fatal(SERVICE, err)
+		t.Fatal(err)
 	}
 	// get data from mongodb
 	t.Log("Save to mongodb: ", tt)

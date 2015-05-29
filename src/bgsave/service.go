@@ -53,7 +53,7 @@ func (s *server) init() {
 	if env := os.Getenv(ENV_SAVE_DELAY); env != "" {
 		sec, err := strconv.Atoi(env)
 		if err != nil {
-			log.Error(SERVICE, err)
+			log.Error(err)
 		} else {
 			s.save_delay = time.Duration(sec) * time.Second
 		}
@@ -93,7 +93,7 @@ func (s *server) dump() {
 	// start connection to redis
 	client, err := redis.Dial("tcp", s.redis_host)
 	if err != nil {
-		log.Critical(SERVICE, err)
+		log.Critical(err)
 		return
 	}
 	defer client.Close()
@@ -101,7 +101,7 @@ func (s *server) dump() {
 	// start connection to mongodb
 	sess, err := mgo.Dial(s.mongodb_url)
 	if err != nil {
-		log.Critical(SERVICE, err)
+		log.Critical(err)
 		return
 	}
 	defer sess.Close()
@@ -118,7 +118,7 @@ func (s *server) dump() {
 	s.Unlock()
 
 	if len(dirty_list) == 0 { // ignore emtpy dirty list
-		log.Trace(SERVICE, "emtpy dirty list")
+		log.Trace("emtpy dirty list")
 		return
 	}
 
@@ -134,7 +134,7 @@ func (s *server) dump() {
 		// mget data from redis
 		records, err := client.Cmd("mget", sublist...).ListBytes()
 		if err != nil {
-			log.Critical(SERVICE, err)
+			log.Critical(err)
 			return
 		}
 
@@ -143,31 +143,31 @@ func (s *server) dump() {
 		for k, v := range sublist {
 			err := bson.Unmarshal(records[k], &tmp)
 			if err != nil {
-				log.Critical(SERVICE, err)
+				log.Critical(err)
 				continue
 			}
 
 			// split key into TABLE NAME and RECORD ID
 			strs := strings.Split(v.(string), ":")
 			if len(strs) != 2 { // log the wrong key
-				log.Critical(SERVICE, "cannot split key", v)
+				log.Critical("cannot split key", v)
 				continue
 			}
 			tblname, id_str := strs[0], strs[1]
 			// save data to mongodb
 			id, err := strconv.Atoi(id_str)
 			if err != nil {
-				log.Critical(SERVICE, err)
+				log.Critical(err)
 				continue
 			}
 
 			_, err = db.C(tblname).Upsert(bson.M{"Id": id}, tmp)
 			if err != nil {
-				log.Critical(SERVICE, err)
+				log.Critical(err)
 				continue
 			}
 		}
 	}
-	log.Info(SERVICE, "num records saved:", len(dirty_list))
+	log.Info("num records saved:", len(dirty_list))
 	runtime.GC()
 }
