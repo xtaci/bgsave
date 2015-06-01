@@ -26,4 +26,11 @@ echo "NSQD_HOST set to:" $NSQD_HOST
 echo "REDIS_HOST set to:" $REDIS_HOST
 echo "MONGODB_URL set to:" $MONGODB_URL
 echo "SAVE_DELAY set to:" $SAVE_DELAY
-$GOBIN/bgsave
+
+# signal handle
+trap 'kill -TERM $PID' TERM
+$GOBIN/bgsave &
+PID=$!
+wait $PID
+wait $PID
+EXIT_STATUS=$?
