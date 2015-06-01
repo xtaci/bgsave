@@ -7,10 +7,6 @@ Package proto is a generated protocol buffer package.
 
 It is generated from these files:
 	bgsave.proto
-	geoip.proto
-	rankserver.proto
-	snowflake.proto
-	wordfilter.proto
 
 It has these top-level messages:
 	BgSave
@@ -46,6 +42,14 @@ func (m *BgSave_Key) Reset()         { *m = BgSave_Key{} }
 func (m *BgSave_Key) String() string { return proto1.CompactTextString(m) }
 func (*BgSave_Key) ProtoMessage()    {}
 
+type BgSave_Keys struct {
+	Names []string `protobuf:"bytes,1,rep,name=names" json:"names,omitempty"`
+}
+
+func (m *BgSave_Keys) Reset()         { *m = BgSave_Keys{} }
+func (m *BgSave_Keys) String() string { return proto1.CompactTextString(m) }
+func (*BgSave_Keys) ProtoMessage()    {}
+
 type BgSave_NullResult struct {
 }
 
@@ -60,6 +64,7 @@ func init() {
 
 type BgSaveServiceClient interface {
 	MarkDirty(ctx context.Context, in *BgSave_Key, opts ...grpc.CallOption) (*BgSave_NullResult, error)
+	MarkDirties(ctx context.Context, in *BgSave_Keys, opts ...grpc.CallOption) (*BgSave_NullResult, error)
 }
 
 type bgSaveServiceClient struct {
@@ -79,10 +84,20 @@ func (c *bgSaveServiceClient) MarkDirty(ctx context.Context, in *BgSave_Key, opt
 	return out, nil
 }
 
+func (c *bgSaveServiceClient) MarkDirties(ctx context.Context, in *BgSave_Keys, opts ...grpc.CallOption) (*BgSave_NullResult, error) {
+	out := new(BgSave_NullResult)
+	err := grpc.Invoke(ctx, "/proto.BgSaveService/MarkDirties", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for BgSaveService service
 
 type BgSaveServiceServer interface {
 	MarkDirty(context.Context, *BgSave_Key) (*BgSave_NullResult, error)
+	MarkDirties(context.Context, *BgSave_Keys) (*BgSave_NullResult, error)
 }
 
 func RegisterBgSaveServiceServer(s *grpc.Server, srv BgSaveServiceServer) {
@@ -101,6 +116,18 @@ func _BgSaveService_MarkDirty_Handler(srv interface{}, ctx context.Context, code
 	return out, nil
 }
 
+func _BgSaveService_MarkDirties_Handler(srv interface{}, ctx context.Context, codec grpc.Codec, buf []byte) (interface{}, error) {
+	in := new(BgSave_Keys)
+	if err := codec.Unmarshal(buf, in); err != nil {
+		return nil, err
+	}
+	out, err := srv.(BgSaveServiceServer).MarkDirties(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 var _BgSaveService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.BgSaveService",
 	HandlerType: (*BgSaveServiceServer)(nil),
@@ -108,6 +135,10 @@ var _BgSaveService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "MarkDirty",
 			Handler:    _BgSaveService_MarkDirty_Handler,
+		},
+		{
+			MethodName: "MarkDirties",
+			Handler:    _BgSaveService_MarkDirties_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{},

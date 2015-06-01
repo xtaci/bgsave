@@ -70,6 +70,13 @@ func (s *server) MarkDirty(ctx context.Context, in *pb.BgSave_Key) (*pb.BgSave_N
 	return &pb.BgSave_NullResult{}, nil
 }
 
+func (s *server) MarkDirties(ctx context.Context, in *pb.BgSave_Keys) (*pb.BgSave_NullResult, error) {
+	for k := range in.Names {
+		s.wait <- in.Names[k]
+	}
+	return &pb.BgSave_NullResult{}, nil
+}
+
 // background loader, copy chan into map
 func (s *server) loader_task() {
 	for {

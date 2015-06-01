@@ -5,11 +5,16 @@ package proto;
 // bgsave service definition
 service BgSaveService {
 	rpc MarkDirty(BgSave.Key) returns (BgSave.NullResult) {} // 标记REDIS中的某个KEY是脏数据
+	rpc MarkDirties(BgSave.Keys) returns (BgSave.NullResult) {} // 标记REDIS中的一组KEY是脏数据
 }
 
 message BgSave {
 	message Key{
-		string name =1;
+		string name=1;
+	}
+
+	message Keys {
+		repeated string names=1;
 	}
 	message NullResult {
 	}
