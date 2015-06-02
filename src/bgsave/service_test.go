@@ -43,7 +43,7 @@ func TestBgSave(t *testing.T) {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address)
 	if err != nil {
-		t.Fatal("did not connect: %v", err)
+		t.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 	c := pb.NewBgSaveServiceClient(conn)
