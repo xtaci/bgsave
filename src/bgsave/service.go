@@ -88,8 +88,8 @@ func (s *server) loader_task() {
 		case <-timer:
 			if len(dirty) > 0 {
 				s.dump(dirty)
+				dirty = make(map[string]bool)
 			}
-			dirty = make(map[string]bool)
 			timer = time.After(DEFAULT_SAVE_DELAY)
 		}
 	}
