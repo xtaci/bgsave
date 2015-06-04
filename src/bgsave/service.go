@@ -8,7 +8,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"os"
 	pb "proto"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -28,7 +27,7 @@ const (
 type server struct {
 	wait         chan string
 	redis_client *redis.Client
-	mgodb        *mgo.Database
+	db           *mgo.Database
 }
 
 func (s *server) init() {
@@ -58,7 +57,7 @@ func (s *server) init() {
 		os.Exit(-1)
 	}
 	// database is provided in url
-	s.mgodb = sess.DB("")
+	s.db = sess.DB("")
 
 	// wait chan
 	s.wait = make(chan string, BUFSIZ)
@@ -142,12 +141,11 @@ func (s *server) dump(dirty map[string]bool) {
 				continue
 			}
 
-			_, err = s.mgodb.C(tblname).Upsert(bson.M{"Id": id}, tmp)
+			_, err = s.db.C(tblname).Upsert(bson.M{"Id": id}, tmp)
 			if err != nil {
 				log.Critical(err)
 				continue
 			}
 		}
 	}
-	runtime.GC()
 }
