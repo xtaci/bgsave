@@ -1,7 +1,7 @@
 # redis persistence service
 [![Build Status](https://travis-ci.org/GameGophers/bgsave.svg?branch=master)](https://travis-ci.org/GameGophers/bgsave)
 
-periodically dump records from redis.      
+dump records from redis.      
 the format of the record is defined as :         
 
 key(tablname:record_id) -> value(packed)

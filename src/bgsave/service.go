@@ -17,13 +17,13 @@ import (
 
 const (
 	SERVICE             = "[BGSAVE]"
-	DEFAULT_SAVE_DELAY  = 15 * time.Minute // depends on how long can we afford to lose data
+	DEFAULT_SAVE_DELAY  = 100 * time.Millisecond
 	DEFAULT_REDIS_HOST  = "127.0.0.1:6379"
 	DEFAULT_MONGODB_URL = "mongodb://127.0.0.1/mydb"
 	ENV_REDIS_HOST      = "REDIS_HOST"
 	ENV_MONGODB_URL     = "MONGODB_URL"
 	ENV_SAVE_DELAY      = "SAVE_DELAY"
-	BUFSIZ              = 512
+	BUFSIZ              = 4096
 	BATCH_SIZE          = 1024 // data save batch size
 )
 
@@ -35,8 +35,6 @@ type server struct {
 	save_delay  time.Duration
 	sync.Mutex
 }
-
-var ()
 
 func (s *server) init() {
 	s.redis_host = DEFAULT_REDIS_HOST
@@ -125,7 +123,6 @@ func (s *server) dump() {
 	s.Unlock()
 
 	if len(dirty_list) == 0 { // ignore emtpy dirty list
-		log.Trace("emtpy dirty list")
 		return
 	}
 
@@ -175,6 +172,5 @@ func (s *server) dump() {
 			}
 		}
 	}
-	log.Info("num records saved:", len(dirty_list))
 	runtime.GC()
 }
