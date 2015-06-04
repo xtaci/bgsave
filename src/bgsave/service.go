@@ -21,28 +21,46 @@ const (
 	DEFAULT_MONGODB_URL = "mongodb://127.0.0.1/mydb"
 	ENV_REDIS_HOST      = "REDIS_HOST"
 	ENV_MONGODB_URL     = "MONGODB_URL"
-	ENV_SAVE_DELAY      = "SAVE_DELAY"
 	BUFSIZ              = 4096
 	BATCH_SIZE          = 1024 // data save batch size
 )
 
 type server struct {
-	wait        chan string
-	redis_host  string
-	mongodb_url string
+	wait         chan string
+	redis_client *redis.Client
+	mgodb        *mgo.Database
 }
 
 func (s *server) init() {
-	s.redis_host = DEFAULT_REDIS_HOST
+	// read redis host
+	redis_host := DEFAULT_REDIS_HOST
 	if env := os.Getenv(ENV_REDIS_HOST); env != "" {
-		s.redis_host = env
+		redis_host = env
 	}
+	// start connection to redis
+	client, err := redis.Dial("tcp", redis_host)
+	if err != nil {
+		log.Critical(err)
+		os.Exit(-1)
+	}
+	s.redis_client = client
 
-	s.mongodb_url = DEFAULT_MONGODB_URL
+	// read mongodb host
+	mongodb_url := DEFAULT_MONGODB_URL
 	if env := os.Getenv(ENV_MONGODB_URL); env != "" {
-		s.mongodb_url = env
+		mongodb_url = env
 	}
 
+	// start connection to mongodb
+	sess, err := mgo.Dial(mongodb_url)
+	if err != nil {
+		log.Critical(err)
+		os.Exit(-1)
+	}
+	// database is provided in url
+	s.mgodb = sess.DB("")
+
+	// wait chan
 	s.wait = make(chan string, BUFSIZ)
 	go s.loader_task()
 }
@@ -76,24 +94,6 @@ func (s *server) loader_task() {
 
 // dump all dirty data into backend database
 func (s *server) dump(dirty map[string]bool) {
-	// start connection to redis
-	client, err := redis.Dial("tcp", s.redis_host)
-	if err != nil {
-		log.Critical(err)
-		return
-	}
-	defer client.Close()
-
-	// start connection to mongodb
-	sess, err := mgo.Dial(s.mongodb_url)
-	if err != nil {
-		log.Critical(err)
-		return
-	}
-	defer sess.Close()
-	// database is provided in url
-	db := sess.DB("")
-
 	// copy dirty map into array
 	dirty_list := make([]interface{}, 0, len(dirty))
 	for k := range dirty {
@@ -114,7 +114,7 @@ func (s *server) dump(dirty map[string]bool) {
 		}
 
 		// mget data from redis
-		records, err := client.Cmd("mget", sublist...).ListBytes()
+		records, err := s.redis_client.Cmd("mget", sublist...).ListBytes()
 		if err != nil {
 			log.Critical(err)
 			return
@@ -143,7 +143,7 @@ func (s *server) dump(dirty map[string]bool) {
 				continue
 			}
 
-			_, err = db.C(tblname).Upsert(bson.M{"Id": id}, tmp)
+			_, err = s.mgodb.C(tblname).Upsert(bson.M{"Id": id}, tmp)
 			if err != nil {
 				log.Critical(err)
 				continue
