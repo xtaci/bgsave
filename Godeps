@@ -6,3 +6,4 @@ google.golang.org/grpc f5ebd86be717593ab029545492c93ddf8914832b
 gopkg.in/vmihailenco/msgpack.v2 v2.3
 gopkg.in/mgo.v2 r2015.01.24
 github.com/fzzy/radix/redis 031cc11e9800a2626ee2ae629655a922b630a07d
+github.com/GameGophers/statsd-pprof 35b07b965c1a377fdf88e59acafab81fc0e7e3b4
