@@ -5,5 +5,4 @@ go:
 install:
     - go get github.com/GameGophers/bgsave
 script:
-    - go tool vet -all .
     - go build github.com/GameGophers/bgsave
