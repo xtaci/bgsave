@@ -11,7 +11,6 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -28,12 +27,9 @@ const (
 )
 
 type server struct {
-	dirty       map[string]bool
 	wait        chan string
 	redis_host  string
 	mongodb_url string
-	save_delay  time.Duration
-	sync.Mutex
 }
 
 func (s *server) init() {
@@ -47,20 +43,8 @@ func (s *server) init() {
 		s.mongodb_url = env
 	}
 
-	s.save_delay = DEFAULT_SAVE_DELAY
-	if env := os.Getenv(ENV_SAVE_DELAY); env != "" {
-		sec, err := strconv.Atoi(env)
-		if err != nil {
-			log.Error(err)
-		} else {
-			s.save_delay = time.Duration(sec) * time.Second
-		}
-	}
-
-	s.dirty = make(map[string]bool)
 	s.wait = make(chan string, BUFSIZ)
 	go s.loader_task()
-	go s.writer_task()
 }
 
 func (s *server) MarkDirty(ctx context.Context, in *pb.BgSave_Key) (*pb.BgSave_NullResult, error) {
@@ -75,26 +59,23 @@ func (s *server) MarkDirties(ctx context.Context, in *pb.BgSave_Keys) (*pb.BgSav
 	return &pb.BgSave_NullResult{}, nil
 }
 
-// background loader, copy chan into map
+// background loader, copy chan into map, execute dump every DEFAULT_SAVE_DELAY
 func (s *server) loader_task() {
 	for {
-		key := <-s.wait
-		s.Lock()
-		s.dirty[key] = true
-		s.Unlock()
-	}
-}
-
-// background writer task
-func (s *server) writer_task() {
-	for {
-		<-time.After(s.save_delay)
-		s.dump()
+		dirty := make(map[string]bool)
+		timer := time.After(DEFAULT_SAVE_DELAY)
+		select {
+		case key := <-s.wait:
+			dirty[key] = true
+		case <-timer:
+			s.dump(dirty)
+			dirty = make(map[string]bool)
+		}
 	}
 }
 
 // dump all dirty data into backend database
-func (s *server) dump() {
+func (s *server) dump(dirty map[string]bool) {
 	// start connection to redis
 	client, err := redis.Dial("tcp", s.redis_host)
 	if err != nil {
@@ -113,14 +94,11 @@ func (s *server) dump() {
 	// database is provided in url
 	db := sess.DB("")
 
-	// copy & clean dirty map
-	s.Lock()
-	dirty_list := make([]interface{}, 0, len(s.dirty))
-	for k := range s.dirty {
+	// copy dirty map into array
+	dirty_list := make([]interface{}, 0, len(dirty))
+	for k := range dirty {
 		dirty_list = append(dirty_list, k)
 	}
-	s.dirty = make(map[string]bool)
-	s.Unlock()
 
 	if len(dirty_list) == 0 { // ignore emtpy dirty list
 		return
