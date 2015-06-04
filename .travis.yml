@@ -1,8 +1,9 @@
 language: go
-
 go:
     - 1.4
 install:
-    - go get github.com/GameGophers/bgsave
-script:
-    - go build github.com/GameGophers/bgsave
+    - export GOPATH=$GOPATH/src/github.com/GameGophers/bgsave
+    - cd $GOPATH
+    - wget -qO- https://raw.githubusercontent.com/pote/gpm/v1.3.2/bin/gpm | bash
+    - gpm
+    - go install bgsave
