@@ -3,7 +3,7 @@ language: go
 go:
     - 1.4
 install:
-    - go get ./...
+    - go get github.com/GameGophers/bgsave
 script:
     - go tool vet -all .
-    - go build ./...
+    - go build github.com/GameGophers/bgsave
