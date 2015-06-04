@@ -86,8 +86,11 @@ func (s *server) loader_task() {
 		case key := <-s.wait:
 			dirty[key] = true
 		case <-timer:
-			s.dump(dirty)
+			if len(dirty) > 0 {
+				s.dump(dirty)
+			}
 			dirty = make(map[string]bool)
+			timer = time.After(DEFAULT_SAVE_DELAY)
 		}
 	}
 }
@@ -98,10 +101,6 @@ func (s *server) dump(dirty map[string]bool) {
 	dirty_list := make([]interface{}, 0, len(dirty))
 	for k := range dirty {
 		dirty_list = append(dirty_list, k)
-	}
-
-	if len(dirty_list) == 0 { // ignore emtpy dirty list
-		return
 	}
 
 	// write data in batch
