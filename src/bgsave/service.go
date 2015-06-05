@@ -97,13 +97,13 @@ func (s *server) loader_task() {
 // dump all dirty data into backend database
 func (s *server) dump(dirty map[string]bool) {
 	// copy dirty map into array
-	dirty_list := make([]interface{}, 0, len(dirty))
+	dirty_list := make([]string, 0, len(dirty))
 	for k := range dirty {
 		dirty_list = append(dirty_list, k)
 	}
 
 	// write data in batch
-	var sublist []interface{}
+	var sublist []string
 	for i := 0; i < len(dirty_list); i += BATCH_SIZE {
 		if (i+1)*BATCH_SIZE > len(dirty_list) { // reach end
 			sublist = dirty_list[i*BATCH_SIZE:]
@@ -128,7 +128,7 @@ func (s *server) dump(dirty map[string]bool) {
 			}
 
 			// split key into TABLE NAME and RECORD ID
-			strs := strings.Split(v.(string), ":")
+			strs := strings.Split(v, ":")
 			if len(strs) != 2 { // log the wrong key
 				log.Critical("cannot split key", v)
 				continue
