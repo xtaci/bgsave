@@ -20,7 +20,7 @@ const (
 	DEFAULT_MONGODB_URL = "mongodb://127.0.0.1/mydb"
 	ENV_REDIS_HOST      = "REDIS_HOST"
 	ENV_MONGODB_URL     = "MONGODB_URL"
-	BUFSIZ              = 4096
+	BUFSIZ              = 65536
 	BATCH_SIZE          = 1024 // data save batch size
 )
 
