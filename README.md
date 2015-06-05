@@ -1,10 +1,12 @@
 # redis persistence service
 [![Build Status](https://travis-ci.org/GameGophers/bgsave.svg?branch=master)](https://travis-ci.org/GameGophers/bgsave)
 
-dump records from redis.      
-the format of the record is defined as :         
+dump records from redis.    
+the record will be written to mongodb ASAP.     
+user should control the frequency of writing. 
 
-key(tablname:record_id) -> value(packed)
+the format of the record is defined as :          
+key(tablname:record_id) -> value(packed)    
 
 # environment variables:
 * REDIS_HOST : eg: 127.0.0.1:6379    
