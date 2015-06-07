@@ -6,6 +6,7 @@ import (
 	"golang.org/x/net/context"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/vmihailenco/msgpack.v2"
 	"os"
 	pb "proto"
 	"strconv"
@@ -119,9 +120,10 @@ func (s *server) dump(dirty map[string]bool) {
 		}
 
 		// save to mongodb
-		var tmp map[string]interface{}
+		var record map[string]interface{}
 		for k, v := range sublist {
-			err := bson.Unmarshal(records[k], &tmp)
+			// unpack message from msgpack format
+			err := msgpack.Unmarshal(records[k], &record)
 			if err != nil {
 				log.Critical(err)
 				continue
@@ -141,7 +143,7 @@ func (s *server) dump(dirty map[string]bool) {
 				continue
 			}
 
-			_, err = s.db.C(tblname).Upsert(bson.M{"Id": id}, tmp)
+			_, err = s.db.C(tblname).Upsert(bson.M{"Id": id}, record)
 			if err != nil {
 				log.Critical(err)
 				continue
