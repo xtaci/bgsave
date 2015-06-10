@@ -8,9 +8,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/vmihailenco/msgpack.v2"
 	"os"
+	"os/signal"
 	pb "proto"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -79,9 +81,12 @@ func (s *server) MarkDirties(ctx context.Context, in *pb.BgSave_Keys) (*pb.BgSav
 
 // background loader, copy chan into map, execute dump every DEFAULT_SAVE_DELAY
 func (s *server) loader_task() {
+	dirty := make(map[string]bool)
+	timer := time.After(DEFAULT_SAVE_DELAY)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGTERM)
+
 	for {
-		dirty := make(map[string]bool)
-		timer := time.After(DEFAULT_SAVE_DELAY)
 		select {
 		case key := <-s.wait:
 			dirty[key] = true
@@ -91,6 +96,11 @@ func (s *server) loader_task() {
 				dirty = make(map[string]bool)
 			}
 			timer = time.After(DEFAULT_SAVE_DELAY)
+		case <-sig:
+			if len(dirty) > 0 {
+				s.dump(dirty)
+			}
+			os.Exit(0)
 		}
 	}
 }
