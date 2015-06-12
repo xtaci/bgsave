@@ -79,7 +79,7 @@ func (s *server) MarkDirties(ctx context.Context, in *pb.BgSave_Keys) (*pb.BgSav
 	return &pb.BgSave_NullResult{}, nil
 }
 
-// background loader, copy chan into map, execute dump every DEFAULT_SAVE_DELAY
+// background loader, copy chan into map, execute dump every SAVE_DELAY
 func (s *server) loader_task() {
 	dirty := make(map[string]bool)
 	timer := time.After(SAVE_DELAY)
