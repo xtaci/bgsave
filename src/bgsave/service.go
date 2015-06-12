@@ -2,7 +2,7 @@ package main
 
 import (
 	log "github.com/GameGophers/nsq-logger"
-	"github.com/fzzy/radix/redis"
+	"github.com/fzzy/radix/extra/cluster"
 	"golang.org/x/net/context"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -18,8 +18,9 @@ import (
 
 const (
 	SERVICE             = "[BGSAVE]"
-	DEFAULT_SAVE_DELAY  = 100 * time.Millisecond
-	DEFAULT_REDIS_HOST  = "127.0.0.1:6379"
+	SAVE_DELAY          = 100 * time.Millisecond
+	COUNT_DELAY         = 1 * time.Minute
+	DEFAULT_REDIS_HOST  = "127.0.0.1:7100"
 	DEFAULT_MONGODB_URL = "mongodb://127.0.0.1/mydb"
 	ENV_REDIS_HOST      = "REDIS_HOST"
 	ENV_MONGODB_URL     = "MONGODB_URL"
@@ -29,7 +30,7 @@ const (
 
 type server struct {
 	wait         chan string
-	redis_client *redis.Client
+	redis_client *cluster.Cluster
 	db           *mgo.Database
 }
 
@@ -39,8 +40,8 @@ func (s *server) init() {
 	if env := os.Getenv(ENV_REDIS_HOST); env != "" {
 		redis_host = env
 	}
-	// start connection to redis
-	client, err := redis.Dial("tcp", redis_host)
+	// start connection to redis cluster
+	client, err := cluster.NewCluster(redis_host)
 	if err != nil {
 		log.Critical(err)
 		os.Exit(-1)
@@ -82,9 +83,12 @@ func (s *server) MarkDirties(ctx context.Context, in *pb.BgSave_Keys) (*pb.BgSav
 // background loader, copy chan into map, execute dump every DEFAULT_SAVE_DELAY
 func (s *server) loader_task() {
 	dirty := make(map[string]bool)
-	timer := time.After(DEFAULT_SAVE_DELAY)
+	timer := time.After(SAVE_DELAY)
+	timer_count := time.After(COUNT_DELAY)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGTERM)
+
+	var count uint64
 
 	for {
 		select {
@@ -92,10 +96,14 @@ func (s *server) loader_task() {
 			dirty[key] = true
 		case <-timer:
 			if len(dirty) > 0 {
+				count += uint64(len(dirty))
 				s.dump(dirty)
 				dirty = make(map[string]bool)
 			}
-			timer = time.After(DEFAULT_SAVE_DELAY)
+			timer = time.After(SAVE_DELAY)
+		case <-timer_count:
+			log.Info("num records saved:", count)
+			timer_count = time.After(COUNT_DELAY)
 		case <-sig:
 			if len(dirty) > 0 {
 				s.dump(dirty)
@@ -107,57 +115,39 @@ func (s *server) loader_task() {
 
 // dump all dirty data into backend database
 func (s *server) dump(dirty map[string]bool) {
-	// copy dirty map into array
-	dirty_list := make([]interface{}, 0, len(dirty))
 	for k := range dirty {
-		dirty_list = append(dirty_list, k)
-	}
-
-	// write data in batch
-	var sublist []interface{}
-	for i := 0; i < len(dirty_list); i += BATCH_SIZE {
-		if (i+1)*BATCH_SIZE > len(dirty_list) { // reach end
-			sublist = dirty_list[i*BATCH_SIZE:]
-		} else {
-			sublist = dirty_list[i*BATCH_SIZE : (i+1)*BATCH_SIZE]
-		}
-
-		// mget data from redis
-		records, err := s.redis_client.Cmd("mget", sublist...).ListBytes()
+		raw, err := s.redis_client.Cmd("GET", k).Bytes()
 		if err != nil {
 			log.Critical(err)
-			return
+			continue
 		}
 
-		// save to mongodb
+		// unpack message from msgpack format
 		var record map[string]interface{}
-		for k, v := range sublist {
-			// unpack message from msgpack format
-			err := msgpack.Unmarshal(records[k], &record)
-			if err != nil {
-				log.Critical(err)
-				continue
-			}
+		err = msgpack.Unmarshal(raw, &record)
+		if err != nil {
+			log.Critical(err)
+			continue
+		}
 
-			// split key into TABLE NAME and RECORD ID
-			strs := strings.Split(v.(string), ":")
-			if len(strs) != 2 { // log the wrong key
-				log.Critical("cannot split key", v)
-				continue
-			}
-			tblname, id_str := strs[0], strs[1]
-			// save data to mongodb
-			id, err := strconv.Atoi(id_str)
-			if err != nil {
-				log.Critical(err)
-				continue
-			}
+		// split key into TABLE NAME and RECORD ID
+		strs := strings.Split(k, ":")
+		if len(strs) != 2 { // log the wrong key
+			log.Critical("cannot split key", k)
+			continue
+		}
+		tblname, id_str := strs[0], strs[1]
+		// save data to mongodb
+		id, err := strconv.Atoi(id_str)
+		if err != nil {
+			log.Critical(err)
+			continue
+		}
 
-			_, err = s.db.C(tblname).Upsert(bson.M{"Id": id}, record)
-			if err != nil {
-				log.Critical(err)
-				continue
-			}
+		_, err = s.db.C(tblname).Upsert(bson.M{"Id": id}, record)
+		if err != nil {
+			log.Critical(err)
+			continue
 		}
 	}
 }

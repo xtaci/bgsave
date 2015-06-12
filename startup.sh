@@ -1,17 +1,17 @@
 #!/bin/bash
 set -e
 NSQD_HOST="http://172.17.42.1:4151"
-REDIS_HOST="172.17.42.1:6379"
+REDIS_HOST="172.17.42.1:7100"
 MONGODB_URL="mongodb://172.17.42.1/mydb"
 case $1 in 
 	production)
 		NSQD_HOST="http://172.17.42.1:4151"
-		REDIS_HOST="172.17.42.1:6379"
+		REDIS_HOST="172.17.42.1:7100"
 		MONGODB_URL="mongodb://172.17.42.1/mydb"
 		;;
 	testing)
 		NSQD_HOST="http://172.17.42.1:4151"
-		REDIS_HOST="172.17.42.1:6379"
+		REDIS_HOST="172.17.42.1:7100"
 		MONGODB_URL="mongodb://172.17.42.1/mydb"
 		;;
 esac
