@@ -25,7 +25,6 @@ const (
 	ENV_REDIS_HOST      = "REDIS_HOST"
 	ENV_MONGODB_URL     = "MONGODB_URL"
 	BUFSIZ              = 65536
-	BATCH_SIZE          = 1024 // data save batch size
 )
 
 type server struct {
