@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/fzzy/radix/extra/cluster"
+	"github.com/golang/snappy/snappy"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"gopkg.in/vmihailenco/msgpack.v2"
+	"os"
 	pb "proto"
 	"testing"
 )
@@ -34,6 +36,16 @@ func TestBgSave(t *testing.T) {
 
 	// mset data into redis
 	bin, _ := msgpack.Marshal(&TestStruct{3721, "hello", 18, 999, 1.1, 2.2, []byte("world")})
+
+	// snappy
+	if env := os.Getenv(ENV_SNAPPY); env != "" {
+		if enc, err := snappy.Encode(nil, bin); err == nil {
+			bin = enc
+		} else {
+			t.Fatal(err)
+		}
+	}
+
 	reply := client.Cmd("set", test_key, bin)
 	if reply.Err != nil {
 		t.Fatal(reply.Err)

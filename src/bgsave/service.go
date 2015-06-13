@@ -3,6 +3,7 @@ package main
 import (
 	log "github.com/GameGophers/nsq-logger"
 	"github.com/fzzy/radix/extra/cluster"
+	"github.com/golang/snappy/snappy"
 	"golang.org/x/net/context"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -24,16 +25,23 @@ const (
 	DEFAULT_MONGODB_URL = "mongodb://127.0.0.1/mydb"
 	ENV_REDIS_HOST      = "REDIS_HOST"
 	ENV_MONGODB_URL     = "MONGODB_URL"
+	ENV_SNAPPY          = "ENABLE_SNAPPY"
 	BUFSIZ              = 65536
 )
 
 type server struct {
-	wait         chan string
-	redis_client *cluster.Cluster
-	db           *mgo.Database
+	wait          chan string
+	redis_client  *cluster.Cluster
+	db            *mgo.Database
+	enable_snappy bool
 }
 
 func (s *server) init() {
+	// snappy
+	if env := os.Getenv(ENV_SNAPPY); env != "" {
+		s.enable_snappy = true
+	}
+
 	// read redis host
 	redis_host := DEFAULT_REDIS_HOST
 	if env := os.Getenv(ENV_REDIS_HOST); env != "" {
@@ -119,6 +127,16 @@ func (s *server) dump(dirty map[string]bool) {
 		if err != nil {
 			log.Critical(err)
 			continue
+		}
+
+		// snappy
+		if s.enable_snappy {
+			if dec, err := snappy.Decode(nil, raw); err == nil {
+				raw = dec
+			} else {
+				log.Critical(err)
+				continue
+			}
 		}
 
 		// unpack message from msgpack format
