@@ -115,6 +115,7 @@ func (s *server) loader_task() {
 			if len(dirty) > 0 {
 				s.dump(dirty)
 			}
+			log.Info("SIGTERM")
 			os.Exit(0)
 		}
 	}
