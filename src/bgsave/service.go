@@ -1,7 +1,7 @@
 package main
 
 import (
-	log "github.com/GameGophers/nsq-logger"
+	log "github.com/GameGophers/libs/nsq-logger"
 	"github.com/fzzy/radix/extra/cluster"
 	"github.com/golang/snappy/snappy"
 	"golang.org/x/net/context"
