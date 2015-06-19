@@ -7,3 +7,4 @@ gopkg.in/vmihailenco/msgpack.v2 v2.3
 gopkg.in/mgo.v2 r2015.01.24
 github.com/fzzy/radix 031cc11e9800a2626ee2ae629655a922b630a07d
 github.com/golang/snappy/snappy eaa750b9bf4dcb7cb20454be850613b66cda3273
+github.com/peterbourgon/g2s ec76db4c1ac16400ac0e17ca9c4840e1d23da5dc
