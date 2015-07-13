@@ -1,5 +1,5 @@
 # bgsave
-[![Build Status](https://travis-ci.org/GameGophers/bgsave.svg?branch=master)](https://travis-ci.org/GameGophers/bgsave)
+[![Build Status](https://travis-ci.org/gonet2/bgsave.svg?branch=master)](https://travis-ci.org/gonet2/bgsave)
 
 Dump records from redis into mongodb.    
 The records will be written to mongodb ASAP, callers should control the frequency of writing. 
@@ -15,7 +15,7 @@ key(tablname:record_id) -> value(packed with msgpack, optional snappy compressio
 
 # install
 install gpm, gvp first        
-$go get -u https://github.com/GameGophers/bgsave/        
+$go get -u https://github.com/gonet2/bgsave/        
 $cd bgsave     
 $source gvp        
 $gpm       
