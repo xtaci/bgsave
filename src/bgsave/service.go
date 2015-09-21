@@ -21,8 +21,8 @@ const (
 	SERVICE             = "[BGSAVE]"
 	SAVE_DELAY          = 100 * time.Millisecond
 	COUNT_DELAY         = 1 * time.Minute
-	DEFAULT_REDIS_HOST  = "127.0.0.1:7100"
-	DEFAULT_MONGODB_URL = "mongodb://127.0.0.1/mydb"
+	DEFAULT_REDIS_HOST  = "172.17.42.1:7100"
+	DEFAULT_MONGODB_URL = "mongodb://172.17.42.1/mydb"
 	ENV_REDIS_HOST      = "REDIS_HOST"
 	ENV_MONGODB_URL     = "MONGODB_URL"
 	ENV_SNAPPY          = "ENABLE_SNAPPY"
