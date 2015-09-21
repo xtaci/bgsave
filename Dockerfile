@@ -5,5 +5,6 @@ COPY . /go
 WORKDIR /go
 ENV GOPATH /go:/go/.godeps
 RUN go install bgsave
+RUN rm -rf pkg src .godeps
 ENTRYPOINT /go/bin/bgsave
 EXPOSE 50004
