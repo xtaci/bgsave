@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/fzzy/radix/extra/cluster"
-	"github.com/golang/snappy/snappy"
+	"github.com/golang/snappy"
 	log "github.com/gonet2/libs/nsq-logger"
 	"golang.org/x/net/context"
 	"gopkg.in/mgo.v2"
