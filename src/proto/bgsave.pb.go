@@ -14,6 +14,8 @@ It has these top-level messages:
 package proto
 
 import proto1 "github.com/golang/protobuf/proto"
+import fmt "fmt"
+import math "math"
 
 import (
 	context "golang.org/x/net/context"
@@ -21,11 +23,9 @@ import (
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
-
-// Reference imports to suppress errors if they are not otherwise used.
 var _ = proto1.Marshal
+var _ = fmt.Errorf
+var _ = math.Inf
 
 type BgSave struct {
 }
@@ -57,8 +57,9 @@ func (m *BgSave_NullResult) Reset()         { *m = BgSave_NullResult{} }
 func (m *BgSave_NullResult) String() string { return proto1.CompactTextString(m) }
 func (*BgSave_NullResult) ProtoMessage()    {}
 
-func init() {
-}
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
 
 // Client API for BgSaveService service
 
@@ -104,9 +105,9 @@ func RegisterBgSaveServiceServer(s *grpc.Server, srv BgSaveServiceServer) {
 	s.RegisterService(&_BgSaveService_serviceDesc, srv)
 }
 
-func _BgSaveService_MarkDirty_Handler(srv interface{}, ctx context.Context, codec grpc.Codec, buf []byte) (interface{}, error) {
+func _BgSaveService_MarkDirty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
 	in := new(BgSave_Key)
-	if err := codec.Unmarshal(buf, in); err != nil {
+	if err := dec(in); err != nil {
 		return nil, err
 	}
 	out, err := srv.(BgSaveServiceServer).MarkDirty(ctx, in)
@@ -116,9 +117,9 @@ func _BgSaveService_MarkDirty_Handler(srv interface{}, ctx context.Context, code
 	return out, nil
 }
 
-func _BgSaveService_MarkDirties_Handler(srv interface{}, ctx context.Context, codec grpc.Codec, buf []byte) (interface{}, error) {
+func _BgSaveService_MarkDirties_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
 	in := new(BgSave_Keys)
-	if err := codec.Unmarshal(buf, in); err != nil {
+	if err := dec(in); err != nil {
 		return nil, err
 	}
 	out, err := srv.(BgSaveServiceServer).MarkDirties(ctx, in)
