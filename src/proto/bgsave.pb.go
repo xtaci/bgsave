@@ -27,39 +27,58 @@ var _ = proto1.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+const _ = proto1.ProtoPackageIsVersion1
+
 type BgSave struct {
 }
 
-func (m *BgSave) Reset()         { *m = BgSave{} }
-func (m *BgSave) String() string { return proto1.CompactTextString(m) }
-func (*BgSave) ProtoMessage()    {}
+func (m *BgSave) Reset()                    { *m = BgSave{} }
+func (m *BgSave) String() string            { return proto1.CompactTextString(m) }
+func (*BgSave) ProtoMessage()               {}
+func (*BgSave) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 type BgSave_Key struct {
 	Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
 }
 
-func (m *BgSave_Key) Reset()         { *m = BgSave_Key{} }
-func (m *BgSave_Key) String() string { return proto1.CompactTextString(m) }
-func (*BgSave_Key) ProtoMessage()    {}
+func (m *BgSave_Key) Reset()                    { *m = BgSave_Key{} }
+func (m *BgSave_Key) String() string            { return proto1.CompactTextString(m) }
+func (*BgSave_Key) ProtoMessage()               {}
+func (*BgSave_Key) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0, 0} }
 
 type BgSave_Keys struct {
 	Names []string `protobuf:"bytes,1,rep,name=names" json:"names,omitempty"`
 }
 
-func (m *BgSave_Keys) Reset()         { *m = BgSave_Keys{} }
-func (m *BgSave_Keys) String() string { return proto1.CompactTextString(m) }
-func (*BgSave_Keys) ProtoMessage()    {}
+func (m *BgSave_Keys) Reset()                    { *m = BgSave_Keys{} }
+func (m *BgSave_Keys) String() string            { return proto1.CompactTextString(m) }
+func (*BgSave_Keys) ProtoMessage()               {}
+func (*BgSave_Keys) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0, 1} }
 
 type BgSave_NullResult struct {
 }
 
-func (m *BgSave_NullResult) Reset()         { *m = BgSave_NullResult{} }
-func (m *BgSave_NullResult) String() string { return proto1.CompactTextString(m) }
-func (*BgSave_NullResult) ProtoMessage()    {}
+func (m *BgSave_NullResult) Reset()                    { *m = BgSave_NullResult{} }
+func (m *BgSave_NullResult) String() string            { return proto1.CompactTextString(m) }
+func (*BgSave_NullResult) ProtoMessage()               {}
+func (*BgSave_NullResult) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0, 2} }
+
+func init() {
+	proto1.RegisterType((*BgSave)(nil), "proto.BgSave")
+	proto1.RegisterType((*BgSave_Key)(nil), "proto.BgSave.Key")
+	proto1.RegisterType((*BgSave_Keys)(nil), "proto.BgSave.Keys")
+	proto1.RegisterType((*BgSave_NullResult)(nil), "proto.BgSave.NullResult")
+}
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion2
 
 // Client API for BgSaveService service
 
@@ -105,28 +124,40 @@ func RegisterBgSaveServiceServer(s *grpc.Server, srv BgSaveServiceServer) {
 	s.RegisterService(&_BgSaveService_serviceDesc, srv)
 }
 
-func _BgSaveService_MarkDirty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _BgSaveService_MarkDirty_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BgSave_Key)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(BgSaveServiceServer).MarkDirty(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(BgSaveServiceServer).MarkDirty(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.BgSaveService/MarkDirty",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BgSaveServiceServer).MarkDirty(ctx, req.(*BgSave_Key))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
-func _BgSaveService_MarkDirties_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
+func _BgSaveService_MarkDirties_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BgSave_Keys)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
-	out, err := srv.(BgSaveServiceServer).MarkDirties(ctx, in)
-	if err != nil {
-		return nil, err
+	if interceptor == nil {
+		return srv.(BgSaveServiceServer).MarkDirties(ctx, in)
 	}
-	return out, nil
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.BgSaveService/MarkDirties",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BgSaveServiceServer).MarkDirties(ctx, req.(*BgSave_Keys))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _BgSaveService_serviceDesc = grpc.ServiceDesc{
@@ -143,4 +174,19 @@ var _BgSaveService_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams: []grpc.StreamDesc{},
+}
+
+var fileDescriptor0 = []byte{
+	// 170 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0xe2, 0x49, 0x4a, 0x2f, 0x4e,
+	0x2c, 0x4b, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x05, 0x53, 0x4a, 0x4e, 0x5c, 0x6c,
+	0x4e, 0xe9, 0xc1, 0x40, 0x61, 0x29, 0x61, 0x2e, 0x66, 0xef, 0xd4, 0x4a, 0x21, 0x1e, 0x2e, 0x96,
+	0xbc, 0xc4, 0xdc, 0x54, 0x09, 0x46, 0x05, 0x46, 0x0d, 0x4e, 0x29, 0x51, 0x2e, 0x16, 0xa0, 0x60,
+	0xb1, 0x10, 0x2f, 0x17, 0x2b, 0x48, 0xb4, 0x18, 0x28, 0xcc, 0x0c, 0x14, 0xe6, 0xe1, 0xe2, 0xf2,
+	0x2b, 0xcd, 0xc9, 0x09, 0x4a, 0x2d, 0x2e, 0xcd, 0x29, 0x31, 0xea, 0x62, 0xe4, 0xe2, 0x85, 0x18,
+	0x12, 0x9c, 0x5a, 0x54, 0x96, 0x99, 0x9c, 0x2a, 0x64, 0xc5, 0xc5, 0xe9, 0x9b, 0x58, 0x94, 0xed,
+	0x92, 0x59, 0x54, 0x52, 0x29, 0x24, 0x08, 0xb1, 0x51, 0x0f, 0xa2, 0x44, 0x0f, 0x68, 0x9e, 0x94,
+	0x04, 0xaa, 0x10, 0xc2, 0x2c, 0x25, 0x06, 0x21, 0x5b, 0x2e, 0x6e, 0x98, 0xde, 0xcc, 0xd4, 0x62,
+	0x21, 0x21, 0x0c, 0xdd, 0xc5, 0xf8, 0xb4, 0x27, 0xb1, 0x81, 0xa5, 0x8c, 0x01, 0x01, 0x00, 0x00,
+	0xff, 0xff, 0xe8, 0x34, 0x79, 0xa2, 0xee, 0x00, 0x00, 0x00,
 }
