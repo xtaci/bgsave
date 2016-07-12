@@ -1,6 +1,14 @@
 package main
 
 import (
+	pb "bgsave/proto"
+	"os"
+	"os/signal"
+	"strconv"
+	"strings"
+	"syscall"
+	"time"
+
 	"github.com/fzzy/radix/extra/cluster"
 	"github.com/golang/snappy"
 	log "github.com/gonet2/libs/nsq-logger"
@@ -8,13 +16,6 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/vmihailenco/msgpack.v2"
-	"os"
-	"os/signal"
-	pb "proto"
-	"strconv"
-	"strings"
-	"syscall"
-	"time"
 )
 
 const (
