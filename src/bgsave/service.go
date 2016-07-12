@@ -9,9 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/fzzy/radix/extra/cluster"
 	"github.com/golang/snappy"
-	log "github.com/gonet2/libs/nsq-logger"
 	"golang.org/x/net/context"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -51,7 +51,7 @@ func (s *server) init() {
 	// start connection to redis cluster
 	client, err := cluster.NewCluster(redis_host)
 	if err != nil {
-		log.Critical(err)
+		log.Panic(err)
 		os.Exit(-1)
 	}
 	s.redis_client = client
@@ -65,7 +65,7 @@ func (s *server) init() {
 	// start connection to mongodb
 	sess, err := mgo.Dial(mongodb_url)
 	if err != nil {
-		log.Critical(err)
+		log.Panic(err)
 		os.Exit(-1)
 	}
 	// database is provided in url
@@ -127,7 +127,7 @@ func (s *server) dump(dirty map[string]bool) {
 	for k := range dirty {
 		raw, err := s.redis_client.Cmd("GET", k).Bytes()
 		if err != nil {
-			log.Critical(err)
+			log.Error(err)
 			continue
 		}
 
@@ -136,7 +136,7 @@ func (s *server) dump(dirty map[string]bool) {
 			if dec, err := snappy.Decode(nil, raw); err == nil {
 				raw = dec
 			} else {
-				log.Critical(err)
+				log.Error(err)
 				continue
 			}
 		}
@@ -145,27 +145,27 @@ func (s *server) dump(dirty map[string]bool) {
 		var record map[string]interface{}
 		err = msgpack.Unmarshal(raw, &record)
 		if err != nil {
-			log.Critical(err)
+			log.Error(err)
 			continue
 		}
 
 		// split key into TABLE NAME and RECORD ID
 		strs := strings.Split(k, ":")
 		if len(strs) != 2 { // log the wrong key
-			log.Critical("cannot split key", k)
+			log.Error("cannot split key", k)
 			continue
 		}
 		tblname, id_str := strs[0], strs[1]
 		// save data to mongodb
 		id, err := strconv.Atoi(id_str)
 		if err != nil {
-			log.Critical(err)
+			log.Error(err)
 			continue
 		}
 
 		_, err = s.db.C(tblname).Upsert(bson.M{"Id": id}, record)
 		if err != nil {
-			log.Critical(err)
+			log.Error(err)
 			continue
 		}
 	}
